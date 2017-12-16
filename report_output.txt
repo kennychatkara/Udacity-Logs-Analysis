@@ -11,6 +11,7 @@
 4. Markoff Chaney (84557 article views)
 -----------------------
 
---- Daily Request Error Rate > 1% ---
+--- Daily Request Error Rates > 1% ---
 1. Jul 17, 2016 (2.26% errors)
 ---------------------------------------
+
