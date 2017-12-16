@@ -46,11 +46,15 @@ To download the project source code, simply clone the repository or download and
     ```bash
     cd /vagrant/Udacity-Logs-Analysis    # change directory to the VM's Udacity-Logs-Analysis directory
     ```
-    - Load the newspaper site's data from the 'newsdata.sql' file into the 'news' PostgreSQL database by entering the following command:
+    - Load the newspaper site's data from the 'newsdata.sql' file into the 'news' PostgreSQL database:
       ```bash
-      psql -d news -f newsdata.sql         # load newspaper site's data into 'news' database
+      psql -d news -f newsdata.sql       # load newspaper site's data into 'news' database
       ```
-    - Finally, while connected to the PostgreSQL 'news' database (after previous 'psql -d news' command), run the following SQL queries to create the views used by this Logs Analysis application:
+    - Finally, start the PostgreSQL command-line utility, connect to the 'news' database, and run the SQL queries to create the views used by this Logs Analysis application:
+      ```bash
+      psql -d news                       # run PostgreSQL utility, connect to 'news' database
+      ```
+      
       ```sql
       # article_views - View for showing the number of views each article has received
       CREATE VIEW article_views AS SELECT author, title, count FROM articles JOIN (SELECT substring(path from '/article/(.*)') as path_slug, count(*) FROM log WHERE path ~ '/article/*' AND status = '200 OK' GROUP BY path) AS views ON articles.slug = views.path_slug;
