@@ -19,6 +19,26 @@ To download the project source code, simply clone the repository or download and
 - To install [Vagrant](https://www.vagrantup.com/downloads.html), download and install the package for your operating system
 
 
+**Setup**
+---------------
+Run the following command to run the PostgreSQL command-line utility and connect to the 'news' database:
+```bash 
+psql -d news
+```
+
+Run the following SQL queries to create the views used by this application:
+```sql
+# article_views View
+CREATE VIEW article_views AS SELECT author, title, count FROM articles JOIN (SELECT substring(path from %'/article/(.*)') AS path_slug, count(*) FROM log WHERE path ~ %'/article/*' AND status = %'200 OK' GROUP BY path) AS views ON articles.slug = views.path_slug;
+
+# request_count View
+CREATE VIEW request_count AS SELECT time::date, count(*) AS requests FROM log GROUP BY time::date;
+
+# error_count View
+CREATE VIEW error_count AS SELECT time::date, count(*) AS errors FROM log WHERE status != %'200 OK' GROUP BY time::date;
+```
+
+
 **Run**
 ---------------
 To run the application, using Terminal, run 'python logs_analysis.py' **from within the VM** '/vagrant/logs_analysis' directory. The report will be printed in the Terminal console.
