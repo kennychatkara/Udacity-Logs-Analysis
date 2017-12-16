@@ -28,14 +28,14 @@ psql -d news
 
 Run the following SQL queries to create the views used by this application:
 ```sql
-# article_views View
-CREATE VIEW article_views AS SELECT author, title, count FROM articles JOIN (SELECT substring(path from %'/article/(.*)') AS path_slug, count(*) FROM log WHERE path ~ %'/article/*' AND status = %'200 OK' GROUP BY path) AS views ON articles.slug = views.path_slug;
+# article_views - View for showing the number of views each article has received
+CREATE VIEW article_views AS SELECT author, title, count FROM articles JOIN (SELECT substring(path from '/article/(.*)') as path_slug, count(*) FROM log WHERE path ~ '/article/*' AND status = '200 OK' GROUP BY path) AS views ON articles.slug = views.path_slug;
 
-# request_count View
-CREATE VIEW request_count AS SELECT time::date, count(*) AS requests FROM log GROUP BY time::date;
+# request_count - View for showing the total number of requests the newspaper site received per day
+CREATE VIEW request_count AS SELECT time::date, count(*) as requests FROM log GROUP BY time::date;
 
-# error_count View
-CREATE VIEW error_count AS SELECT time::date, count(*) AS errors FROM log WHERE status != %'200 OK' GROUP BY time::date;
+# error_count - View for showing the number of unsuccessful requests the newspaper site received per day
+CREATE VIEW error_count AS SELECT time::date, count(*) AS errors FROM log WHERE status != '200 OK' GROUP BY time::date;
 ```
 
 
