@@ -1,5 +1,5 @@
+#! /usr/bin/env python
 import psycopg2
-from datetime import datetime
 
 DB_NAME = 'news'
 
@@ -7,7 +7,14 @@ DB_NAME = 'news'
 def connect(dbname):
     """ Connect to database with name {dbname}. """
 
-    return psycopg2.connect('dbname=%s' % dbname)
+    try:
+        connection = psycopg2.connect('dbname=%s' % dbname)
+        cursor = connection.cursor()
+    except Exception as e:
+        print 'Failed to establish connection to "%s" database!' % dbname
+        raise e
+
+    return connection, cursor
 
 
 def report_popular_articles(cursor, count):
@@ -64,7 +71,7 @@ def report_error_days(cursor, percent):
         the day with the highest error rate at the top.
     """
 
-    cursor.execute('SELECT request_count.time, '
+    cursor.execute('SELECT to_char(request_count.time::date, %s), '
                    'ROUND((errors::numeric / requests::numeric) * 100, 2) '
                    'AS error_percent '
                    'FROM request_count JOIN error_count '
@@ -72,13 +79,13 @@ def report_error_days(cursor, percent):
                    'WHERE '
                    'ROUND((errors::numeric / requests::numeric)*100, 2) > %s '
                    'ORDER BY error_percent DESC;',
-                   (percent,))
+                   ('Mon DD, YYYY', percent,))
     results = cursor.fetchall()
 
     if results:
         print '--- Daily Request Error Rates > %s%% ---' % percent
         for x in xrange(0, len(results)):
-            date_str = datetime.strftime(results[x][0], '%b %d, %Y')
+            date_str = results[x][0]
             error_str = results[x][1]
             print '%s. %s (%s%% errors)' % (x+1, date_str, error_str)
         print '---------------------------------------\n'
@@ -88,15 +95,8 @@ def report_error_days(cursor, percent):
 
 if __name__ == '__main__':
 
-    try:
-        # Connect to database
-        db_connection = connect(DB_NAME)
-    except Exception as e:
-        print 'Failed to establish connection to "%s" database!' % DB_NAME
-        raise e
-
-    # Create a cursor object for queries
-    db_cursor = db_connection.cursor()
+    # Connect to database
+    db_connection, db_cursor = connect(DB_NAME)
 
     # Retrieve and output log data analysis
     try:
